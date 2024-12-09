@@ -11,6 +11,7 @@ class WeatherApp(QWidget):
         self.city_input = QLineEdit(self)
         self.get_weather_button = QPushButton('Get Weather', self)
         self.temperatureLabel = QLabel(self)
+        self.feels_like = QLabel(self)
         self.emojiLabel = QLabel(self)
         self.description_label = QLabel(self)
         self.initUI()
@@ -24,6 +25,7 @@ class WeatherApp(QWidget):
         vbox.addWidget(self.city_input)
         vbox.addWidget(self.get_weather_button)
         vbox.addWidget(self.temperatureLabel)
+        vbox.addWidget(self.feels_like)
         vbox.addWidget(self.emojiLabel)
         vbox.addWidget(self.description_label)
 
@@ -32,6 +34,7 @@ class WeatherApp(QWidget):
         self.city_label.setAlignment(Qt.AlignCenter)
         self.city_input.setAlignment(Qt.AlignCenter)
         self.temperatureLabel.setAlignment(Qt.AlignCenter)
+        self.feels_like.setAlignment(Qt.AlignCenter)
         self.emojiLabel.setAlignment(Qt.AlignCenter)
         self.description_label.setAlignment(Qt.AlignCenter)
         
@@ -39,6 +42,7 @@ class WeatherApp(QWidget):
         self.city_input.setObjectName("city_input")
         self.get_weather_button.setObjectName("get_weather_button")
         self.temperatureLabel.setObjectName("temperatureLabel")
+        self.feels_like.setObjectName("feelsLike")
         self.emojiLabel.setObjectName("emojiLabel")
         self.description_label.setObjectName("description_label")
 
@@ -63,6 +67,9 @@ class WeatherApp(QWidget):
         }
         QLabel#temperatureLabel {
             font-size: 75px;
+        }
+        QLabel#feelsLike {
+            font-size: 20px;
         }
         QLabel#emojiLabel {
             font-size: 100px;
@@ -128,16 +135,58 @@ class WeatherApp(QWidget):
                  self.display_error('Too many Redirecets:\n Check the URL')
             except requests.exceptions.RequestException as req_error:
                  self.display_error(f"Request Error:\n{req_error}")
-            
-            
-            print(data)
 
-
-    def display_error(self):
-            pass
+    def display_error(self, message):
+            self.temperatureLabel.setStyleSheet("font-size: 35px;")
+            self.temperatureLabel.setText(message)
+            self.emojiLabel.clear()
+            self.description_label.clear()
 
     def display_weather(self, data):
-            print(data)
+            self.temperatureLabel.setStyleSheet("font-size: 75px;")
+            temperature_k = data["main"]["temp"]
+            temperature_c = temperature_k - 273.15
+
+            weather_id = data["weather"][0]["id"]
+
+            feels_like_k = data["main"]["feels_like"]
+            feels_like_c = feels_like_k - 273.15
+
+            description = data["weather"][0]["description"]
+
+
+            self.temperatureLabel.setText(f"{temperature_c:.1f}°C")
+            self.feels_like.setText(f"Feels like {feels_like_c:.1f}°C")
+            self.emojiLabel.setText(self.get_weather_emoji(weather_id))
+            self.description_label.setText(description)
+
+    @staticmethod
+    def get_weather_emoji(weather_id):
+         
+         if 200 <= weather_id <= 232:
+              return "⛈️"
+         elif 300 <= weather_id <= 321:
+              return "🌦️"
+         elif 500 <= weather_id <= 531:
+              return "🌧️"
+         elif 600 <= weather_id <= 622:
+              return "❄️"
+         elif 701 <= weather_id <= 741:
+              return "🌫️"
+         elif weather_id == 762:
+              return "🌋"
+         elif weather_id == 771:
+              return "💨"
+         elif weather_id == 781:
+              return "🌪️"
+         elif weather_id == 800:
+              return "☀️"
+         elif 801 <= weather_id <= 804:
+              return "☁️"
+         else:
+              return ""
+         
+
 
 if __name__ == "__main__":  
     app = QApplication(sys.argv)
